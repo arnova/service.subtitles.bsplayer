@@ -1,10 +1,10 @@
 ﻿import gzip
 import random
 from time import sleep
-from StringIO import StringIO
+from io import StringIO
 from xml.etree import ElementTree
 
-from utils import movie_size_and_hash, get_session, log
+from resources.lib.utils import movie_size_and_hash, get_session, log
 
 # s1-9, s101-109
 SUB_DOMAINS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9',
@@ -48,12 +48,13 @@ class BSPlayer(object):
         ).format(search_url=self.search_url, func_name=func_name, params=params)
 
         log('BSPlayer.api_request', 'Sending request: %s.' % func_name)
-        for i in xrange(tries):
+        for i in range(tries):
             try:
-                self.session.addheaders.extend(headers.items())
-                res = self.session.open(self.search_url, data)
-                return ElementTree.fromstring(res.read())
-            except Exception, ex:
+                self.session.addheaders.extend(list(headers.items()))
+                res = self.session.open(self.search_url, data.encode('utf-8'))
+                xml_data = res.read().decode('utf-8')
+                return ElementTree.fromstring(xml_data)
+            except Exception as ex:
                 log("BSPlayer.api_request", "ERROR: %s." % ex)
                 if func_name == 'logIn':
                     self.search_url = get_sub_domain()
@@ -141,7 +142,7 @@ class BSPlayer(object):
     def download_subtitles(download_url, dest_path, proxies=None):
         session = get_session(proxies=proxies, http_10=True)
         session.addheaders = [('User-Agent', 'Mozilla/4.0 (compatible; Synapse)'),
-                             ('Content-Length', 0)]
+                              ('Content-Length', 0)]
         res = session.open(download_url)
         if res:
             gf = gzip.GzipFile(fileobj=StringIO(res.read()))
