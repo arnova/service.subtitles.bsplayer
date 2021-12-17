@@ -10,11 +10,11 @@ import xbmcvfs
 
 
 def log(module, msg):
-    xbmc.log(("### [%s] - %s" % (module, msg)), level=xbmc.LOGDEBUG)
+    xbmc.log((u"### [%s] - %s" % (module, msg)), level=xbmc.LOGDEBUG)
 
 
 def notify(script_name, language, string_id):
-    xbmc.executebuiltin('Notification(%s,%s)' % (script_name, language(string_id)))
+    xbmc.executebuiltin((u'Notification(%s,%s)' % (script_name, language(string_id))).encode('utf-8'))
 
 
 def get_params(params_str=""):
@@ -129,28 +129,28 @@ def movie_size_and_hash(file_path):
     byte_size = struct.calcsize(longlong_format)
 
     # FIXME: Filesize for URL encoded files doesn't work. Need to encode?
-    f = xbmcvfs.File(file_path)
-    file_size = f.size()
-    movie_hash = file_size
+    with xbmcvfs.File(file_path) as f:
+        file_size = f.size()
+        movie_hash = file_size
 
-    if file_size < 65536 * 2:
-        f.close()
-        log('utils.movie_size_and_hash', "ERROR: SizeError (%d)." % file_size)
-        raise Exception("SizeError")
+        if file_size < 65536 * 2:
+            f.close()
+            log('utils.movie_size_and_hash', "ERROR: SizeError (%d)." % file_size)
+            raise Exception("SizeError")
 
-    for x in range(65536 / byte_size):
-        buff = f.read(byte_size)
-        (l_value,) = struct.unpack(longlong_format, buff)
-        movie_hash += l_value
-        movie_hash &= 0xFFFFFFFFFFFFFFFF  # to remain as 64bit number
+        for x in range(int(65536 / byte_size)):
+            buff = f.readBytes(byte_size)
+            (l_value,) = struct.unpack(longlong_format, buff)
+            movie_hash += l_value
+            movie_hash &= 0xFFFFFFFFFFFFFFFF  # to remain as 64bit number
 
-    f.seek(max(0, file_size - 65536), 0)
-    for x in range(65536 / byte_size):
-        buff = f.read(byte_size)
-        (l_value,) = struct.unpack(longlong_format, buff)
-        movie_hash += l_value
-        movie_hash &= 0xFFFFFFFFFFFFFFFF
-    returned_movie_hash = "%016x" % movie_hash
-    f.close()
+        f.seek(max(0, file_size - 65536), 0)
+        for x in range(int(65536 / byte_size)):
+            buff = f.readBytes(byte_size)
+            (l_value,) = struct.unpack(longlong_format, buff)
+            movie_hash += l_value
+            movie_hash &= 0xFFFFFFFFFFFFFFFF
+        returned_movie_hash = "%016x" % movie_hash
+
 
     return file_size, returned_movie_hash

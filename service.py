@@ -20,10 +20,10 @@ __scriptname__ = __addon__.getAddonInfo('name')
 __version__ = __addon__.getAddonInfo('version')
 __language__ = __addon__.getLocalizedString
 
-__cwd__ = xbmc.translatePath(__addon__.getAddonInfo('path'))
-__profile__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
-__resource__ = xbmc.translatePath(path.join(__cwd__, 'resources', 'lib'))
-__temp__ = xbmc.translatePath(path.join(__profile__, 'temp', ''))
+__cwd__ = xbmcvfs.translatePath(__addon__.getAddonInfo('path'))
+__profile__ = xbmcvfs.translatePath(__addon__.getAddonInfo('profile'))
+__resource__ = xbmcvfs.translatePath(path.join(__cwd__, 'resources', 'lib'))
+__temp__ = xbmcvfs.translatePath(path.join(__profile__, 'temp', ''))
 
 
 params = get_params()
@@ -43,17 +43,17 @@ if params['action'] == 'search':
         for subtitle in sorted(subtitles, key=lambda s: s['subLang']):
             list_item = xbmcgui.ListItem(
                 label=languages[subtitle['subLang']],
-                label2=subtitle['subName'],
-                thumbnailImage=xbmc.convertLanguage(subtitle["subLang"], xbmc.ISO_639_1)
+                label2=subtitle['subName']
             )
-
+            list_item.setArt( { "icon" : "0", "thumb" : xbmc.convertLanguage(subtitle["subLang"], xbmc.ISO_639_1) } )
             plugin_url = "plugin://{path}/?{query}".format(
                 path=__scriptid__,
                 query=urllib.parse.urlencode(dict(
                     action='download',
                     link=subtitle['subDownloadLink'],
                     file_name=subtitle['subName'],
-                    format=subtitle['subFormat']
+                    format=subtitle['subFormat'],
+                    lang=xbmc.convertLanguage(subtitle["subLang"],xbmc.ISO_639_1)
                 ))
             )
             log("BSPlayer.plugin_url", "Plugin Url Created: %s." % plugin_url)

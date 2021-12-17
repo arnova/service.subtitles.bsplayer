@@ -2,7 +2,7 @@
 <addon id="service.subtitles.bsplayer"
        name="BSPlayer"
        version="0.3.0"
-       provider-name="realgam3">
+       provider-name="realgam3, sile70000, arnova">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
   </requires>
